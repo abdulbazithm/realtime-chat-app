@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Chat with {{ other_user.username }}</h5>
+            <a href="{% url 'user_list' %}" class="btn btn-sm btn-outline-secondary">Back</a>
+        </div>
+
+        <div id="chat-box"
+             class="card-body"
+             style="height:400px; overflow-y:auto; background-color:#f8f9fa;">
+
+            {% for message in messages %}
+                <div class="d-flex mb-3 {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
+
+                    <div class="p-2 px-3 rounded shadow-sm
+                        {% if message.sender == request.user %}
+                            bg-primary text-white
+                        {% else %}
+                            bg-white
+                        {% endif %}"
+                        style="max-width:70%;">
+
+                        <div>
+                            {{ message.content }}
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+
+                            <small style="font-size:11px; opacity:0.8;">
+                                {{ message.timestamp|date:"H:i" }}
+                            </small>
+
+                            {% if message.sender == request.user %}
+                                <div class="ms-2">
+                                    <small>
+                                        {% if message.is_read %}
+                                            ✓✓
+                                        {% else %}
+                                            ✓
+                                        {% endif %}
+                                    </small>
+
+                                    <a href="{% url 'delete_message' message.id %}"
+                                       class="ms-2 text-white"
+                                       style="text-decoration:none;">
+                                        🗑
+                                    </a>
+                                </div>
+                            {% endif %}
+
+                        </div>
+                    </div>
+
+                </div>
+            {% endfor %}
+
+        </div>
+
+        <div class="card-footer bg-white">
+            <form class="d-flex gap-2">
+                {% csrf_token %}
+                <input type="text"
+                       id="message-input"
+                       class="form-control"
+                       placeholder="Type a message...">
+                <button class="btn btn-primary px-4">Send</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+window.onload = function() {
+
+    const username = "{{ other_user.username }}";
+    const currentUser = "{{ request.user.username }}";
+
+    const chatBox = document.getElementById("chat-box");
+    const messageInput = document.getElementById("message-input");
+    const form = document.querySelector("form");
+
+    const chatSocket = new WebSocket(
+        "ws://" + window.location.host + "/ws/chat/" + username + "/"
+    );
+
+    // Scroll to bottom after full render
+    requestAnimationFrame(() => {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+
+        const messageWrapper = document.createElement("div");
+        messageWrapper.classList.add("d-flex", "mb-3");
+
+        if (data.sender === currentUser) {
+            messageWrapper.classList.add("justify-content-end");
+        } else {
+            messageWrapper.classList.add("justify-content-start");
+        }
+
+        const messageBubble = document.createElement("div");
+        messageBubble.classList.add("p-2", "px-3", "rounded", "shadow-sm");
+        messageBubble.style.maxWidth = "70%";
+
+        if (data.sender === currentUser) {
+            messageBubble.classList.add("bg-primary", "text-white");
+            messageBubble.innerHTML =
+                data.message +
+                " <div class='mt-1 text-end'><small>✓</small></div>";
+        } else {
+            messageBubble.classList.add("bg-white");
+            messageBubble.innerHTML = data.message;
+        }
+
+        messageWrapper.appendChild(messageBubble);
+        chatBox.appendChild(messageWrapper);
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+    };
+
+    form.onsubmit = function(e) {
+        e.preventDefault();
+
+        const message = messageInput.value.trim();
+
+        if (message !== "") {
+            chatSocket.send(JSON.stringify({
+                "message": message
+            }));
+        }
+
+        messageInput.value = "";
+    };
+};
+</script>
+
+</body>
+</html>
