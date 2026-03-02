@@ -18,6 +18,13 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ["*"]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://web-production-cb5dc.up.railway.app/"
+]
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
 
 # Application definition
 
@@ -111,6 +118,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 ASGI_APPLICATION = 'chat_app.asgi.application'
 
@@ -122,4 +130,3 @@ CHANNEL_LAYERS = {
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
-STATIC_ROOT = BASE_DIR / "staticfiles"

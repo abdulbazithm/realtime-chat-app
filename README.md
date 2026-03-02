@@ -53,8 +53,16 @@ The application allows authenticated users to chat in real-time with online pres
 - **Consumers** → Handle WebSocket communication
 - **ASGI + Daphne** → Real-time server
 
----
+## 📌 Technical Highlights
 
-## ⚙️ Installation & Setup (Local)
+- Authenticated WebSocket handling
+- Real-time presence tracking
+- Database-backed read receipts
+- Clean UI using Bootstrap
+- Production-ready project structure
 
-### 1️⃣ Clone the repository
+
+## 🌐 Live Demo
+
+Deployed using Railway with Daphne ASGI server.
+Live Link: 
